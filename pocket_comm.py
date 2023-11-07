@@ -13,8 +13,11 @@ class PocketItem:
     domain_name: str
     given_title: str
     given_url: str
+    favorite: int
     time_added: int
-    time_to_read: int
+    time_read: int
+    time_updated: int
+    time_favorited: int
     word_count: int
 
     WORDS_PER_MINUTE = 214
@@ -25,8 +28,11 @@ class PocketItem:
         domain_name: str,
         given_title: str,
         given_url: str,
+        favorite: int,
         time_added: str,
-        time_to_read: str,
+        time_read: str,
+        time_updated: str,
+        time_favorited: str,
         word_count: str,
     ):
         self.sort_idx = 0
@@ -34,8 +40,11 @@ class PocketItem:
         self.domain_name = domain_name
         self.given_title = given_title
         self.given_url = given_url
+        self.favorite = favorite
         self.time_added = int(time_added)
-        self.time_to_read = self.get_time_to_read(int(word_count))
+        self.time_read = int(time_read)
+        self.time_updated = int(time_updated)
+        self.time_favorited = int(time_favorited)
         self.word_count = int(word_count)
 
     @staticmethod
@@ -51,7 +60,7 @@ class PocketItem:
 class Pocket:
     POCKET_ACCESS_TOKEN_FILE = Path.home() / ".pocket"
     # you get this from Pocket after creating a new app
-    CONSUMER_KEY = "104395-a466587cb5dfff975b68a80"
+    CONSUMER_KEY = "85406-88544918aec94a54ec4f8881"
     REDIRECT_URI = "http://example.com/"
 
     def __init__(self):
@@ -177,7 +186,7 @@ class Pocket:
                 )
             data["contentType"] = content_type
         if sort:
-            if state not in ("newest", "oldest", "title", "site"):
+            if sort not in ("newest", "oldest", "title", "site"):
                 raise RuntimeError(
                     f"Invalid option {sort=} (valid options: newest, oldest, title, site)"
                 )
@@ -210,17 +219,21 @@ class Pocket:
 
         items = dict()
         for item_id, data in r_json["list"].items():
+            print(json.dumps(data, ensure_ascii=False))
             items[item_id] = PocketItem(
                 item_id,
                 data.get("domain_metadata", {}).get("name", "N/A"),
                 data.get("given_title", "N/A"),
                 data.get("given_url", "N/A"),
+                data.get("favorite", "0"),
                 data.get("time_added", "N/A"),
-                data.get("time_to_read", "0"),
+                data.get("time_read", "N/A"),
+                data.get("time_updated", "N/A"),
+                data.get("time_favorited", "N/A"),
                 data.get("word_count", "0"),
             )
 
-        return items
+        return r_json["status"], r_json["complete"], r_json["error"], r_json["since"], items
 
     def request_delete(self, item_id):
         data = {
