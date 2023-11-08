@@ -60,7 +60,7 @@ class PocketItem:
 class Pocket:
     POCKET_ACCESS_TOKEN_FILE = Path.home() / ".pocket"
     # you get this from Pocket after creating a new app
-    CONSUMER_KEY = "85406-88544918aec94a54ec4f8881"
+    CONSUMER_KEY = "109471-456e9cfad7ba1cffb9e928e"
     REDIRECT_URI = "http://example.com/"
 
     def __init__(self):
@@ -101,6 +101,7 @@ class Pocket:
             },
             json=batched_send_requests,
         )
+        self.batched_actions.clear()
         if r.status_code != 200:
             print(
                 f"Request failed with status code {r.status_code}",
@@ -264,3 +265,6 @@ class Pocket:
         """
 
         self.batched_actions.append({"action": "tags_clear", "item_id": item_id})
+
+    def request_delete_batch(self, item_id: str):
+        self.batched_actions.append({"action": "delete", "item_id": item_id})
